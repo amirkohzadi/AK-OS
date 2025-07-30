@@ -1,39 +1,20 @@
-name: Build ISO (nightly)
-
-on:
-  push:
-    branches: [ "main" ]
-  schedule:
-    - cron: '0 3 * * *'   # هر روز ساعت ۳ بامداد UTC
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            live-build debootstrap squashfs-tools xorriso qemu-system-x86
-
       - name: Build ISO
         run: |
           chmod +x build.sh
           sudo ./build.sh
 
+      - name: List generated ISOs
+        run: ls -lh *.iso
+
       - name: Smoke-test in QEMU (60 s)
         run: |
-          qemu-system-x86_64 -m 1024 -cdrom live-image-amd64.iso \
+          ISO=$(ls *.iso | head -n1)
+          qemu-system-x86_64 -m 1024 -cdrom "$ISO" \
             -display none -serial mon:stdio -no-reboot -nographic -boot d &
-          PID=$!
-          sleep 60
-          kill $PID || true
+          PID=$!; sleep 60; kill $PID || true
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
           name: ak-os-nightly
-          path: live-image-amd64.iso
+          path: "*.iso"

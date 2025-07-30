@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
-# پاک‌سازی خروجی‌های قبلی
-lb clean --all
+# ۱) پاک کردن همه فایل‌های قبلی + حذف پوشه config
+sudo lb clean --purge
+rm -rf config
 
-# پیکربندی live-build برای Ubuntu 24.04 (Noble)
+# ۲) پیکربندی تازه بدون نصب‌کننده (d-i)
 lb config \
-  --debian-installer live \
+  --debian-installer none \
   --distribution noble \
   --architectures amd64 \
   --binary-images iso-hybrid
 
-# ساخت ISO
+# ۳) ساخت ISO
 sudo lb build
+
